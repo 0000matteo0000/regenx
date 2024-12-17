@@ -104,7 +104,8 @@ def rparse_count(rule, i=0, states=None, options=None):
                 if len(count_values) == 1:  # count with one argument
                     if len(count_values[0]) == 0:  # if no argument was given
                         raise SyntaxError(f"Invalid count, no count arguments given at index {i}: {rule[i]!r}\n\t{rule}\n\t{'~' * i}^")
-                    min, max = 0, int(count_values[0])
+                    max = int(count_values[0])
+                    min = max
                 else:  # count with two arguments
                     if len(count_values[1]) == 0:  # first argument is infinity by default if not given, but we can't do that
                         raise SyntaxError(f"Invalid count, even if regex allows unlimited count max it's not possible to handle it for generation, error at index {i}: {rule[i]!r}\n\t{rule}\n\t{'~' * i}^")

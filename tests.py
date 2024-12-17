@@ -96,14 +96,14 @@ assert (p := parse(s := "a{0}")) == [[""]], "".join(map(str, [repr(s), ":  parse
 assert (g := list(gen(p))) == [""], "".join(map(str, [repr(s), ": generation fail: ", g]))
 assert (p := parse(s := "a{0,0}")) == [[""]], "".join(map(str, [repr(s), ":  parse fail: ", p]))
 assert (g := list(gen(p))) == [""], "".join(map(str, [repr(s), ": generation fail: ", g]))
-assert (p := parse(s := "a{1}")) == [[[["a", ""]]]], "".join(map(str, [repr(s), ":  parse fail: ", p]))
-assert (g := list(gen(p))) == ["a", ""], "".join(map(str, [repr(s), ": generation fail: ", g]))
+assert (p := parse(s := "a{1}")) == [[[["a"]]]], "".join(map(str, [repr(s), ":  parse fail: ", p]))
+assert (g := list(gen(p))) == ["a"], "".join(map(str, [repr(s), ": generation fail: ", g]))
 assert (p := parse(s := "a{0,1}")) == [[[["a", ""]]]], "".join(map(str, [repr(s), ":  parse fail: ", p]))
 assert (g := list(gen(p))) == ["a", ""], "".join(map(str, [repr(s), ": generation fail: ", g]))
 assert (p := parse(s := "a{1,1}")) == [[[["a"]]]], "".join(map(str, [repr(s), ":  parse fail: ", p]))
 assert (g := list(gen(p))) == ["a"], "".join(map(str, [repr(s), ": generation fail: ", g]))
-assert (p := parse(s := "a{2}")) == [[[["a", ""], ["a", ""]]]], "".join(map(str, [repr(s), ":  parse fail: ", p]))
-assert (g := list(gen(p))) == ["aa", "a", "a", ""], "".join(map(str, [repr(s), ": generation fail: ", g]))
+assert (p := parse(s := "a{2}")) == [[[["a"], ["a"]]]], "".join(map(str, [repr(s), ":  parse fail: ", p]))
+assert (g := list(gen(p))) == ["aa"], "".join(map(str, [repr(s), ": generation fail: ", g]))
 assert (p := parse(s := "a{0,2}")) == [[[["a", ""], ["a", ""]]]], "".join(map(str, [repr(s), ":  parse fail: ", p]))  # should change
 assert (g := list(gen(p))) == ["aa", "a", "a", ""], "".join(map(str, [repr(s), ": generation fail: ", g]))  # should change
 assert (p := parse(s := "a{1,2}")) == [[[["a"], ["a", ""]]]], "".join(map(str, [repr(s), ":  parse fail: ", p]))
@@ -114,8 +114,8 @@ assert (p := parse(s := "a{2,3}")) == [[[["a"], ["a"], ["a", ""]]]], "".join(map
 assert (g := list(gen(p))) == ["aaa", "aa"], "".join(map(str, [repr(s), ": generation fail: ", g]))
 assert (p := parse(s := "a{2,4}")) == [[[["a"], ["a"], ["a", ""], ["a", ""]]]], "".join(map(str, [repr(s), ":  parse fail: ", p]))  # should change
 assert (g := list(gen(p))) == ["aaaa", "aaa", "aaa", "aa"], "".join(map(str, [repr(s), ": generation fail: ", g]))  # should change
-assert (p := parse(s := "[a]{1}")) == [[[["a", ""]]]], "".join(map(str, [repr(s), ":  parse fail: ", p]))
-assert (g := list(gen(p))) == ["a", ""], "".join(map(str, [repr(s), ": generation fail: ", g]))
+assert (p := parse(s := "[a]{1}")) == [[[["a"]]]], "".join(map(str, [repr(s), ":  parse fail: ", p]))
+assert (g := list(gen(p))) == ["a"], "".join(map(str, [repr(s), ": generation fail: ", g]))
 assert (p := parse(s := "[ab]{1,2}")) == [[[["a", "b"], ["a", "b", ""]]]], "".join(map(str, [repr(s), ":  parse fail: ", p]))
 assert (g := list(gen(p))) == ["aa", "ab", "a", "ba", "bb", "b"], "".join(map(str, [repr(s), ": generation fail: ", g]))
 exc = None
@@ -144,8 +144,8 @@ assert (p := parse(s := "a{0,1}?")) == [[[[[["a", ""]]]], ""]], "".join(map(str,
 assert (g := list(gen(p))) == ["a", "", ""], "".join(map(str, [repr(s), ": generation fail: ", g]))  # should change
 assert (p := parse(s := "a{1,1}?")) == [[[[[["a"]]]], ""]], "".join(map(str, [repr(s), ":  parse fail: ", p]))  # should change
 assert (g := list(gen(p))) == ["a", ""], "".join(map(str, [repr(s), ": generation fail: ", g]))    # should change
-assert (p := parse(s := "[a]{1}?")) == [[[[[["a", ""]]]], ""]], "".join(map(str, [repr(s), ":  parse fail: ", p]))  # should change
-assert (g := list(gen(p))) == ["a", "", ""], "".join(map(str, [repr(s), ": generation fail: ", g]))  # should change
+assert (p := parse(s := "[a]{1}?")) == [[[[[["a"]]]], ""]], "".join(map(str, [repr(s), ":  parse fail: ", p]))  # should change
+assert (g := list(gen(p))) == ["a", ""], "".join(map(str, [repr(s), ": generation fail: ", g]))  # should change
 assert (p := parse(s := "[ab]{1,2}?")) == [[[[[["a", "b"], ["a", "b", ""]]]], ""]], "".join(map(str, [repr(s), ":  parse fail: ", p]))
 assert (g := list(gen(p))) == ["aa", "ab", "a", "ba", "bb", "b", ""], "".join(map(str, [repr(s), ": generation fail: ", g]))
 # consider testing for group count
