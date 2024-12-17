@@ -3,36 +3,57 @@ import logging
 import sys
 from copy import deepcopy
 
+from escapes import ascii_printable, escapes
+
 logger = logging.getLogger(__name__)
 logging_format = "%(levelname)s:%(filename)s:%(funcName)s:%(message)s"
-logging.basicConfig(encoding="utf-8", format=logging_format, level=logging.WARNING)
+logging.basicConfig(encoding="utf-8", format=logging_format, level=logging.DEBUG)
 
 
 class stable_set:
     def __init__(self, *args):
-        self._dict = dict()
-        self._count = 0
+        self.__dict = dict()
+        # self.__count = 0
+        # self.__dirty_count = False
         for c in args:
             self.add(c)
 
     def add(self, c):
-        self._dict[c] = self._count
-        self._count += 1
+        if len(c) <= 1:
+            self.__dict[c] = None  # self.__count
+            # self.__count += 1
+        else:
+            for cc in c:
+                self.__dict[cc] = None  # self.__count
+                # self.__count += 1
+
+    def remove(self, c):
+        self.__dict.pop(c)
+        # self.__dirty_count = True  # lazy index update
+        # self.__count -= 1
 
     def __len__(self):
-        return len(self._dict)
+        return len(self.__dict)
 
     def __iter__(self):
-        return iter(self._dict)
+        return iter(self.__dict)
 
     def __contains__(self, c):
-        return c in self._dict
+        return c in self.__dict
 
-    def index(self, c):
-        return self._dict[c]
+    # def __recount(self):
+    #     self.__count = 0
+    #     for c in self.__dict:
+    #         self.__dict[c] = self.__count
+    #         self.__count += 1
+
+    # def index(self, c):
+    #     if self.__dirty_count:  # lazy index update
+    #         self.__recount()
+    #     return self.__dict[c]
 
     def __repr__(self):
-        return "<" + repr(list(self._dict))[1:-1] + ">"
+        return "<" + repr(list(self.__dict))[1:-1] + ">"
 
 
 class State(enum.IntEnum):
@@ -44,14 +65,67 @@ class State(enum.IntEnum):
     GROUP = enum.auto()
 
 
+def read_hex(rule, i=0, n=2):
+    values = ""
+    for i in range(i, i + n):
+        if i >= len(rule):
+            logger.debug("SystaxError unclosed %r", State.ESCAPE)
+            raise SyntaxError(f"Invalid spec, end of spec while still processing an open {State.ESCAPE.name} at index {i-1}: {rule[i-1]!r}\n\t{rule}\n\t{'~' * (i-1)}^")
+        match rule[i]:
+            case "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "a" | "b" | "c" | "d" | "e" | "f" | "A" | "B" | "C" | "D" | "E" | "F":
+                logger.debug("case %r", rule[i])
+                values += rule[i]
+                logger.debug("values %r", values)
+            case _:
+                raise SyntaxError(f"Invalid hexadecimal escape sequence, invalid hexadecimal character at index {i}: {rule[i]!r}\n\t{rule}\n\t{'~' * i}^")
+    return chr(int(values, 16)), i
+
+
+def read_oct(rule, i=0, n=3):
+    values = ""
+    for i in range(i, i + n):
+        if i >= len(rule):
+            logger.debug("SystaxError unclosed %r", State.ESCAPE)
+            raise SyntaxError(f"Invalid spec, end of spec while still processing an open {State.ESCAPE.name} at index {i-1}: {rule[i-1]!r}\n\t{rule}\n\t{'~' * (i-1)}^")
+        match rule[i]:
+            case "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7":
+                logger.debug("case %r", rule[i])
+                values += rule[i]
+                logger.debug("values %r", values)
+            case _:
+                raise SyntaxError(f"Invalid octal escape sequence, invalid octal character at index {i}: {rule[i]!r}\n\t{rule}\n\t{'~' * i}^")
+    ov = int(values, 8)
+    if ov > 255:
+        raise SyntaxError(f"Invalid octal escape sequence, invalid octal value ({ov!r} is > than 255 = 0o377 = 0xff) at index {i}: {rule[i]!r}\n\t{rule}\n\t{'~' * i}^")
+    return chr(ov), i
+
+
 def rparse_escape(rule, i=0, states=None, options=None):
     logger.debug("enter %r, %r, %r, %r", rule, i, states, options)
     # skip registering state since this function does not recurse
     if states[-1] != State.SET:
         options.append(stable_set())  # do not create a new option if escaping inside a set
         logger.debug("set %r %r", states[-1], State.SET)
+    if i >= len(rule):
+        logger.debug("SystaxError unclosed %r", State.ESCAPE)
+        raise SyntaxError(f"Invalid spec, end of spec while still processing an open {State.ESCAPE.name} at index {i-1}: {rule[i-1]!r}\n\t{rule}\n\t{'~' * (i-1)}^")
     logger.debug("case %r", rule[i])
-    options[-1].add(rule[i])
+    if rule[i] in escapes:
+        l = escapes[rule[i]]
+    else:
+        match rule[i]:
+            case "x":
+                l, i = read_hex(rule, i=i + 1, n=2)
+            case "o":
+                l, i = read_oct(rule, i=i + 1, n=3)
+            case "u":
+                l, i = read_hex(rule, i=i + 1, n=4)
+            case "U":
+                l, i = read_hex(rule, i=i + 1, n=8)
+            case _:
+                l = rule[i]
+    logger.debug("l %r", l)
+    options[-1].add(l)
     logger.debug("options %r", options[-1])
     logger.debug("return %r, %r", i, options)
     return i, options
@@ -59,7 +133,21 @@ def rparse_escape(rule, i=0, states=None, options=None):
 
 def rparse_set(rule, i=0, states=None, options=None):
     logger.debug("se_setenter %r, %r, %r, %r", rule, i, states, options)
-    options.append(stable_set())
+    negative_group = False
+    if i >= len(rule):
+        logger.debug("SystaxError unclosed %r", State.SET)
+        raise SyntaxError(f"Invalid spec, end of spec while still processing an open {State.SET.name} at index {i-1}: {rule[i-1]!r}\n\t{rule}\n\t{'~' * (i-1)}^")
+    if rule[i] == "^":
+        logger.debug("negative %r", rule[i])
+        negative_group = True
+        i += 1
+        if i >= len(rule):
+            logger.debug("SystaxError unclosed %r", State.SET)
+            raise SyntaxError(f"Invalid spec, end of spec while still processing an open {State.SET.name} at index {i-1}: {rule[i-1]!r}\n\t{rule}\n\t{'~' * (i-1)}^")
+    if not negative_group:
+        options.append(stable_set())
+    else:
+        options.append(stable_set(ascii_printable))
     logger.debug("options %r", options[-1])
     while i < len(rule):
         match rule[i]:
@@ -69,7 +157,8 @@ def rparse_set(rule, i=0, states=None, options=None):
                 if len(options[-1]) == 0:  # discard empty set
                     logger.debug("options pop empty")
                     options.pop()
-                break
+                logger.debug("return %r, %r", i, options)
+                return i, options
             case "\\":  # escape sequence in set
                 logger.debug("case %r", rule[i])
                 states.append(State.SET)
@@ -77,14 +166,17 @@ def rparse_set(rule, i=0, states=None, options=None):
                 states.pop()
             case _:  # set opening char is allowed in set as a normal char
                 logger.debug("case %r", rule[i])
-                options[-1].add(rule[i])
+                if not negative_group:
+                    options[-1].add(rule[i])
+                else:
+                    options[-1].remove(rule[i])
                 logger.debug("options %r", options[-1])
         i += 1
-    logger.debug("return %r, %r", i, options)
-    return i, options
+    logger.debug("SystaxError unclosed %r", State.SET)
+    raise SyntaxError(f"Invalid spec, end of spec while still processing an open {State.SET.name} at index {i-1}: {rule[i-1]!r}\n\t{rule}\n\t{'~' * (i-1)}^")
 
 
-def rparse_count(rule, i=0, states=None, options=None):
+def rparse__count(rule, i=0, states=None, options=None):
     logger.debug("enter %r, %r, %r, %r", rule, i, states, options)
     # skip registering state since this function does not recurse
     count_values = [""]
@@ -131,13 +223,14 @@ def rparse_count(rule, i=0, states=None, options=None):
                         options[-1][-1][-1].add("")
                     for _ in range(min + 1, max):
                         options[-1][-1].append(options[-1][-1][-1])
-                break
+                logger.debug("return %r, %r", i, options)
+                return i, options
             case _:
                 logger.debug("case %r", rule[i])
                 raise SyntaxError(f"Invalid count, invalid argument character at index {i}: {rule[i]!r}\n\t{rule}\n\t{'~' * i}^")
         i += 1
-    logger.debug("return %r, %r", i, options)
-    return i, options
+    logger.debug("SystaxError unclosed %r", State.COUNT)
+    raise SyntaxError(f"Invalid spec, end of spec while still processing an open {State.COUNT.name} at index {i-1}: {rule[i-1]!r}\n\t{rule}\n\t{'~' * (i-1)}^")
 
 
 def rparse(rule, i=0, states=None, options=None):
@@ -161,7 +254,7 @@ def rparse(rule, i=0, states=None, options=None):
                     # logger.warning(f"optional modifier character {rule[i]!r} applied to nothing, ignoring it, warning at index {i}: {rule[i]!r}\n\t{rule}\n\t{'~' * i}^")
                     print(f"optional modifier character {rule[i]!r} applied to nothing, ignoring it, warning at index {i}: {rule[i]!r}\n\t{rule}\n\t{'~' * i}^", file=sys.stderr)
             case "{":  # new count
-                i, options = rparse_count(rule, i=i + 1, states=states, options=options)
+                i, options = rparse__count(rule, i=i + 1, states=states, options=options)
             case "|":  # new or
                 if len(states) > 1 and states[enter_state_index] == State.OR:
                     return options, i
@@ -194,7 +287,7 @@ def rparse(rule, i=0, states=None, options=None):
                 options[-1].add(rule[i])
         i += 1
     if states[-1] != State.NONE and states[-1] != State.OR:
-        logger.debug("rparse SystaxError unclosed %r", states[-1])
+        logger.debug("SystaxError unclosed %r", states[-1])
         raise SyntaxError(f"Invalid spec, end of spec while still processing an open {states[-1].name} at index {i-1}: {rule[i-1]!r}\n\t{rule}\n\t{'~' * (i-1)}^")
     if len(options) == 0:
         options = [[""]]
