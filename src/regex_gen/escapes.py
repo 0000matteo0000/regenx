@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2024-present 0000matteo0000 <matteo.sid@hotmail.it>
+#
+# SPDX-License-Identifier: MIT
+
 import string
 
 ascii_printable_set = set(string.printable)
@@ -15,8 +19,10 @@ escapes = {
     "s": "".join(sorted(string.whitespace)),
     "w": "".join(sorted(string.ascii_letters + string.digits + "_")),
 }
-escapes.update({
-    "D": "".join(sorted(ascii_printable_set - set(escapes["d"]))),
-    "S": "".join(sorted(ascii_printable_set - set(escapes["s"]))),
-    "W": "".join(sorted(ascii_printable_set - set(escapes["w"]))),
-})
+escapes.update(
+    {
+        "D": "".join(sorted(ascii_printable_set - set(escapes["d"]))),
+        "S": "".join(sorted(ascii_printable_set - set(escapes["s"]))),
+        "W": "".join(sorted(ascii_printable_set - set(escapes["w"]))),
+    }
+)

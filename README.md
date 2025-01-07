@@ -1,6 +1,29 @@
-# RGen
+# regex-gen
 
-_RGen_ is yet another regex based text generation library
+_regex-gen_ is yet another regex based text generation library
+
+
+[![PyPI - Version](https://img.shields.io/pypi/v/regex-gen.svg)](https://pypi.org/project/regex-gen)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/regex-gen.svg)](https://pypi.org/project/regex-gen)
+
+-----
+
+## Table of Contents
+
+- [regex-gen](#regex-gen)
+  - [Table of Contents](#table-of-contents)
+  - [Installation](#installation)
+  - [Features](#features)
+    - [Supported syntax](#supported-syntax)
+  - [Limitations](#limitations)
+  - [See also](#see-also)
+  - [License](#license)
+
+## Installation
+
+```console
+pip install regex-gen
+```
 
 ## Features
 
@@ -8,6 +31,7 @@ This library currently supports generating all the possible strings that would m
 
 ### Supported syntax
 
+`.` character (it will include all ascii printable characters)
 `\` escape sequences
 all the special ones are ascii only
 the negative (uppercase) special escapes will include all ascii printable characters minus the specified ones
@@ -39,7 +63,35 @@ all other escaped characters will be treated as themselves
 `[]` sets
 
 - the `^` modifier will include all ascii printable characters minus the specified ones
+- the `-` range modifier will include all characters with integer values between and including the ranges specified
 
 `()` groups (modifiers are not yet supported)
 
 `|` or sequences, inside or outside groups
+
+## Limitations
+
+some features of regex do not make sense and will be ignored:
+
+-   boundary assertion character (`^` and `$`)
+-   all the beginning or end of word escape sequences
+-   greedy and non greedy modifiers for counts (`+` and `?`),  
+  maybe in future they could be used to set the generation order
+
+limits by design, they may be supported if there is a reason to
+
+-   unlimited counts such as `*` `+`  
+  this is because i feel that generating an infinitely long string is mostly useless and it would complicate the parsing process more abstract and less easily serializable,  
+  you are welcome to convince me otherwise.
+-   group modifiers  
+  is there a point for those for our scope?
+
+
+## See also
+
+inspired by: [janstarke/rexgen](https://github.com/janstarke/rexgen)  
+friends: [Buba98/regex_enumerator](https://github.com/Buba98/regex_enumerator) (yes we know each other)
+
+## License
+
+`regex-gen` is distributed under the terms of the [MIT](https://spdx.org/licenses/MIT.html) license.
