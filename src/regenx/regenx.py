@@ -6,7 +6,7 @@ import enum
 import logging
 from copy import deepcopy
 
-from regex_gen.escapes import ascii_printable, escapes
+from regenx.escapes import ascii_printable, escapes
 
 logger = logging.getLogger(__name__)
 logging_format = "%(levelname)s:%(filename)s:%(funcName)s:%(message)s"

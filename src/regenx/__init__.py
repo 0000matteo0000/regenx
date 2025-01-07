@@ -2,6 +2,6 @@
 #
 # SPDX-License-Identifier: MIT
 
-from regex_gen.regex_gen import gen, parse
+from regenx.regenx import gen, parse
 
 __all__ = ["gen", "parse"]

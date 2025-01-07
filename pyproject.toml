@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "regex-gen"
+name = "regenx"
 dynamic = ["version"]
 description = "yet another regex based text generation library"
 readme = "README.md"
@@ -32,42 +32,65 @@ dependencies = []
 
 
 [project.optional-dependencies]
-testing = ["pytest", "pytest-cov",]
-formatting = ["autopep8", "isort",]
-dev = ["regex-gen[testing, formatting]",]
+testing = ["pytest", "pytest-cov"]
+formatting = ["autopep8", "isort"]
+dev = ["regenx[testing, formatting]"]
 
 [project.urls]
-Homepage = "https://github.com/0000matteo0000/regex-gen"
-Documentation = "https://github.com/0000matteo0000/regex-gen#readme"
-Issues = "https://github.com/0000matteo0000/regex-gen/issues"
-Source = "https://github.com/0000matteo0000/regex-gen"
+Homepage = "https://github.com/0000matteo0000/regenx"
+Documentation = "https://github.com/0000matteo0000/regenx#readme"
+Issues = "https://github.com/0000matteo0000/regenx/issues"
+Source = "https://github.com/0000matteo0000/regenx"
 
 [tool.hatch.version]
-path = "src/regex_gen/__about__.py"
-[tool.hatch.envs.types]
-extra-dependencies = ["mypy>=1.0.0",]
-[tool.hatch.envs.types.scripts]
-check = "mypy --install-types --non-interactive {args:src/regex_gen tests}"
+path = "src/regenx/__about__.py"
 
 [tool.hatch.envs.hatch-test]
-dependencies = ["pytest", "pytest-cov"]
+dependencies = [
+  "coverage-enable-subprocess",
+  "coverage[toml]",
+  "pytest",
+  "pytest-cov",
+  "pytest-mock",
+  "pytest-randomly",
+  "pytest-xdist[psutil]",
+]
 [[tool.hatch.envs.hatch-test.matrix]]
 python = ["3.10", "3.11", "3.12", "3.13"]
 [tool.hatch.envs.hatch-test.scripts]
-run = 'python3 -m pytest --full-trace "."'
-run-cov = 'COVERAGE_FILE=.coverage_py"$(python3 -c "import platform; print(platform.python_version())")" python3 -m pytest --cov="./src/regex_gen/" --full-trace "."'
-cov-combine = "coverage combine"
-cov-report = "coverage report"
-
-
+run = '''
+  python3 -m pytest{env:HATCH_TEST_ARGS} \
+    --full-trace \
+    {args}
+'''
+run-cov = '''
+  COVERAGE_FILE="./tests/results/.coverage_py$(python3 -c "import platform; print(platform.python_version())")" \
+  python3 -m pytest{env:HATCH_TEST_ARGS} \
+    --cov="./src/regenx/" \
+    --cov-report="html:./tests/results/htmlcov_py$(python3 -c "import platform; print(platform.python_version())")" \
+    --full-trace \
+    {args} \
+  && rm -f ".coverage".*.*.*
+'''
+cov-combine = '''
+  COVERAGE_FILE="./tests/results/.coverage" \
+  coverage combine \
+    --keep \
+    "./tests/results/".coverage_py*
+'''
+cov-report = '''
+  COVERAGE_FILE="./tests/results/.coverage" \
+  coverage html \
+    --directory="./tests/results/htmlcov"
+'''
 [tool.coverage.run]
-source_pkgs = ["regex_gen", "tests"]
+source_pkgs = ["regenx", "tests"]
 branch = true
 parallel = true
-omit = ["src/regex_gen/__about__.py"]
+omit = ["src/regenx/__about__.py"]
 [tool.coverage.paths]
-regex_gen = ["src/regex_gen", "*/regex-gen/src/regex_gen"]
-tests = ["tests", "*/regex-gen/tests"]
+regenx = ["src/regenx"]
+tests = ["tests"]
 [tool.coverage.report]
 exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
 

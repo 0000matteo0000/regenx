@@ -8,7 +8,7 @@ if __name__ == "__main__":
 
     sys.path.append((Path(__file__).parent.parent / "src").absolute().as_posix())
 
-from regex_gen import gen, parse
+from regenx import gen, parse
 
 tests = [
     ("", [[""]], [""], False, None),

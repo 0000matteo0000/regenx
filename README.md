@@ -1,16 +1,16 @@
-# regex-gen
+# regenx
 
-_regex-gen_ is yet another regex based text generation library
+_regenx_ is yet another regex based text generation library
 
 
-[![PyPI - Version](https://img.shields.io/pypi/v/regex-gen.svg)](https://pypi.org/project/regex-gen)
-[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/regex-gen.svg)](https://pypi.org/project/regex-gen)
+[![PyPI - Version](https://img.shields.io/pypi/v/regenx.svg)](https://pypi.org/project/regenx)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/regenx.svg)](https://pypi.org/project/regenx)
 
 -----
 
 ## Table of Contents
 
-- [regex-gen](#regex-gen)
+- [regenx](#regenx)
   - [Table of Contents](#table-of-contents)
   - [Installation](#installation)
   - [Features](#features)
@@ -22,7 +22,7 @@ _regex-gen_ is yet another regex based text generation library
 ## Installation
 
 ```console
-pip install regex-gen
+pip install regenx
 ```
 
 ## Features
@@ -94,4 +94,4 @@ friends: [Buba98/regex_enumerator](https://github.com/Buba98/regex_enumerator) (
 
 ## License
 
-`regex-gen` is distributed under the terms of the [MIT](https://spdx.org/licenses/MIT.html) license.
+`regenx` is distributed under the terms of the [MIT](https://spdx.org/licenses/MIT.html) license.

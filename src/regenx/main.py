@@ -4,7 +4,7 @@
 
 import sys
 
-from regex_gen import gen, parse
+from regenx import gen, parse
 
 if __name__ == "__main__":
     for i, rule in enumerate(sys.argv):
