@@ -41,26 +41,26 @@ jobs:
           name: dist
           path: dist/
 
-  publish-test:
-    name: Publish on TestPyPI
-    needs:
-      - build
-    environment:
-      name: testpypi
-      url: https://test.pypi.org/p/regenx
-    permissions:
-      id-token: write
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download the built artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: dist
-          path: dist/
-      - name: Publish to TestPyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          repository-url: https://test.pypi.org/legacy/
+  # publish-test:
+  #   name: Publish on TestPyPI
+  #   needs:
+  #     - build
+  #   environment:
+  #     name: testpypi
+  #     url: https://test.pypi.org/p/regenx
+  #   permissions:
+  #     id-token: write
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Download the built artifacts
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: dist
+  #         path: dist/
+  #     - name: Publish to TestPyPI
+  #       uses: pypa/gh-action-pypi-publish@release/v1
+  #       with:
+  #         repository-url: https://test.pypi.org/legacy/
 
   publish:
     name: Publish on PyPI
