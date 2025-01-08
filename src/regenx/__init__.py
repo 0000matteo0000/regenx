@@ -2,6 +2,6 @@
 #
 # SPDX-License-Identifier: MIT
 
-from regenx.regenx import gen, parse
+from regenx.regenx import calculate_count, gen, parse
 
-__all__ = ["gen", "parse"]
+__all__ = ["gen", "parse", "calculate_count"]

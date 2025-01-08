@@ -5,6 +5,8 @@
 import enum
 import logging
 from copy import deepcopy
+from functools import reduce
+from operator import mul
 
 from regenx.escapes import ascii_printable, escapes
 
@@ -398,10 +400,33 @@ def r_and_gen(options, i=0, generated=""):
     logger.debug("return %r, %r, %r", options, i, generated)
 
 
-def gen(options, count=None):
+def gen(options, skip=0, limit=None):
     logger.debug("-" * 25)
     for i, r in enumerate(r_and_gen(options)):
-        if count is not None and i >= count:
+        if limit is not None and i >= skip + limit:
             break
-        yield r
+        if i >= skip:
+            yield r
     logger.debug("-" * 25)
+
+
+def calculate_count_and(options):
+    if isinstance(options, str):
+        return 1
+    if isinstance(options, int):
+        return options
+    return reduce(mul, [calculate_count_or(oo) for oo in options])
+
+
+def calculate_count_or(options):
+    if isinstance(options, str):
+        return 1
+    if isinstance(options, int):
+        return options
+    return sum([calculate_count_and(oa) for oa in options])
+
+
+def calculate_count(options):
+    if len(options) == 0:
+        return 0
+    return calculate_count_and(options)
